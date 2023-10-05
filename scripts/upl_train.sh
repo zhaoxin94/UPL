@@ -16,7 +16,7 @@ CLASS_EQULE=$7  # CLASS_EQULE True of False
 TAG=$8 # log tag (multiple_models_random_init or rn50_random_init)
 
 
-for SEED in {1..16}
+for SEED in {1..3}
 do
     DIR=./output/${DATASET}/${TRAINER}/${CFG}_${SHOTS}shots_EQULE_${CLASS_EQULE}_${CONF_THRESHOLD}_${TAG}/nctx${NCTX}_csc${CSC}_ctp${CTP}/seed${SEED}
     if [ -d "$DIR" ]; then

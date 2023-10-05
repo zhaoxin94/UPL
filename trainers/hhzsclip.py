@@ -5,8 +5,8 @@ import os
 from dassl.engine import TRAINER_REGISTRY, TrainerX
 from dassl.optim import build_optimizer, build_lr_scheduler
 
-from clip import clip
-from clip.model import convert_weights
+from clip666 import clip
+from clip666.model import convert_weights
 
 from .coop import load_clip_to_cpu
 

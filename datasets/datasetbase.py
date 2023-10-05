@@ -8,15 +8,27 @@ import os
 
 
 class UPLDatasetBase(DatasetBase):
-    def __init__(self, train_x=None, train_u=None, val=None, test=None, novel=None, base=None, sstrain=None):
+    def __init__(self,
+                 train_x=None,
+                 train_u=None,
+                 val=None,
+                 test=None,
+                 novel=None,
+                 base=None,
+                 sstrain=None):
         super().__init__(train_x=train_x, val=val, test=test)
         self._novel = novel
         self._base = base
         self.sstrain = sstrain
-        self._lab2cname_novel, _  = self.get_lab2cname(novel) 
+        self._lab2cname_novel, _ = self.get_lab2cname(novel)
         self._lab2cname_base, _ = self.get_lab2cname(base)
 
-    def generate_fewshot_dataset(self, *data_sources, num_shots=-1, mode=None, ignore_labels=None, repeat=False):
+    def generate_fewshot_dataset(self,
+                                 *data_sources,
+                                 num_shots=-1,
+                                 mode=None,
+                                 ignore_labels=None,
+                                 repeat=False):
         """Generate a few-shot dataset (typically for the training set).
 
         This function is useful when one wants to evaluate a model
@@ -40,7 +52,7 @@ class UPLDatasetBase(DatasetBase):
         for data_source in data_sources:
             tracker = self.split_dataset_by_label(data_source)
             dataset = []
-            
+
             for label, items in tracker.items():
                 # print(label, items[0].classname)
                 if mode == 'train':
@@ -50,7 +62,8 @@ class UPLDatasetBase(DatasetBase):
                                 sampled_items = random.sample(items, num_shots)
                             else:
                                 if repeat:
-                                    sampled_items = random.choices(items, k=num_shots)
+                                    sampled_items = random.choices(items,
+                                                                   k=num_shots)
                                 else:
                                     sampled_items = items
                             dataset.extend(sampled_items)
@@ -59,7 +72,8 @@ class UPLDatasetBase(DatasetBase):
                             sampled_items = random.sample(items, num_shots)
                         else:
                             if repeat:
-                                sampled_items = random.choices(items, k=num_shots)
+                                sampled_items = random.choices(items,
+                                                               k=num_shots)
                             else:
                                 sampled_items = items
                         dataset.extend(sampled_items)
@@ -77,7 +91,7 @@ class UPLDatasetBase(DatasetBase):
             return output[0]
 
         return output
-    
+
     def split_base_and_novel(self, test, ignore_labels):
         tracker = self.split_dataset_by_label(test)
         dataset_base = []
@@ -88,7 +102,7 @@ class UPLDatasetBase(DatasetBase):
             else:
                 dataset_base.extend(items)
         return dataset_novel, dataset_base
-    
+
     def get_lab2cname(self, data_source):
         """Get a label-to-classname mapping (dict).
 
@@ -106,7 +120,7 @@ class UPLDatasetBase(DatasetBase):
             return mapping, classnames
         else:
             return None, None
-    
+
     def read_split(self, filepath, path_prefix):
         def _convert(items):
             out = []
@@ -122,19 +136,24 @@ class UPLDatasetBase(DatasetBase):
         val = _convert(split["val"])
         test = _convert(split["test"])
         return train, val, test
-    
-    def read_sstrain_data(self, filepath, path_prefix, predict_label_dict=None):
-        
+
+    def read_sstrain_data(self,
+                          filepath,
+                          path_prefix,
+                          predict_label_dict=None):
         def _convert(items):
             out = []
             for impath, _, _ in items:
                 impath = os.path.join(path_prefix, impath)
                 sub_impath = './data/' + impath.split('/data/')[1]
                 if sub_impath in predict_label_dict:
-                    item = Datum(impath=impath, label=predict_label_dict[sub_impath], classname=self._lab2cname[predict_label_dict[sub_impath]])
+                    item = Datum(impath=impath,
+                                 label=predict_label_dict[sub_impath],
+                                 classname=self._lab2cname[
+                                     predict_label_dict[sub_impath]])
                     out.append(item)
             return out
-        
+
         def _convert_no_label(items):
             out = []
             for impath, _, _ in items:
@@ -142,7 +161,7 @@ class UPLDatasetBase(DatasetBase):
                 item = Datum(impath=impath, label=-1, classname=None)
                 out.append(item)
             return out
-        
+
         print(f"Reading split from {filepath}")
         split = read_json(filepath)
         if predict_label_dict is not None:
@@ -150,7 +169,7 @@ class UPLDatasetBase(DatasetBase):
         else:
             train = _convert_no_label(split["train"])
         return train
-    
+
     # dtd会报错 需要单独处理，它里面有处理的函数，需要copy过来，详见原版的database
 
     def add_label(self, predict_label_dict, dataset_name):
@@ -162,11 +181,14 @@ class UPLDatasetBase(DatasetBase):
         # print(predict_label_dict, 'predict_label_dict')
         print(dataset_name)
         if dataset_name == 'SSFGVCAircraft':
-            sstrain = self.read_data_without_label(self.cname2lab, "images_variant_train.txt", predict_label_dict)
+            sstrain = self.read_data_without_label(self.cname2lab,
+                                                   "images_variant_train.txt",
+                                                   predict_label_dict)
         elif dataset_name == 'SSImageNet':
             sstrain = self.read_sstrain_data(self.train_x, predict_label_dict)
         else:
-            sstrain = self.read_sstrain_data(self.split_path, self.image_dir, predict_label_dict)
-        
+            sstrain = self.read_sstrain_data(self.split_path, self.image_dir,
+                                             predict_label_dict)
+
         self.sstrain = sstrain
         return sstrain

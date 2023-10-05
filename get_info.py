@@ -20,6 +20,9 @@ import datasets.caltech101
 import datasets.ucf101
 import datasets.imagenet
 
+# zhaoxin add
+import datasets.ucm
+
 import trainers.upltrainer
 import trainers.hhzsclip
 
